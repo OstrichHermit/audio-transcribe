@@ -12,19 +12,73 @@
 - **长音频免切片**：走百炼录音文件识别（filetrans）异步接口，一次上传整段处理，DashScope 临时存储转完自动删除
 - **清晰的输出约定**：stdout 只输出转写文本，进度 / 耗时 / 计费估算走 stderr，方便脚本和 Agent 调用
 
-## 依赖
+## 安装
 
-- Python 3.10+（开发环境为 3.14），依赖 `dashscope`：
+### 1. 安装依赖
+
+- Python 3.10+，安装 SDK：
   ```bash
   pip install dashscope
   ```
-- [ffmpeg / ffprobe](https://ffmpeg.org/) 在 PATH 中
-- 阿里云百炼 API Key（[控制台](https://bailian.console.aliyun.com/) 创建），配置到环境变量：
-  ```bash
-  # Windows
-  setx DASHSCOPE_API_KEY "sk-xxxx"
-  ```
-- 仅转写微信 SILK 文件时：[uv](https://docs.astral.sh/uv/)（脚本会自动创建 Python 3.11 临时环境安装 pilk，无需手动操作）
+- [ffmpeg / ffprobe](https://ffmpeg.org/) 加入 PATH
+- 仅转写微信 SILK 文件时额外需要 [uv](https://docs.astral.sh/uv/)（脚本自动创建 Python 3.11 临时环境安装 pilk，无需手动操作）
+
+### 2. 配置 API Key
+
+在[阿里云百炼控制台](https://bailian.console.aliyun.com/)创建 API Key，配置到环境变量：
+
+```bash
+# Windows
+setx DASHSCOPE_API_KEY "sk-xxxx"
+
+# macOS / Linux
+echo 'export DASHSCOPE_API_KEY="sk-xxxx"' >> ~/.bashrc
+```
+
+> 使用业务空间专属 key（`sk-ws-` 前缀）时无需其他配置；使用普通百炼 key 请额外设置 `DASHSCOPE_BASE_URL=https://dashscope.aliyuncs.com/api/v1`（见下文[环境变量](#环境变量)）。
+
+### 3. 部署文件
+
+仓库中每个文件的用途和建议放置位置：
+
+| 文件 | 用途 | 放到哪里 |
+|------|------|----------|
+| `scripts/transcribe.py` | 主脚本，所有逻辑都在这里 | 不需要单独移动，跟随安装方式即可 |
+| `SKILL.md` | Claude Code Skill 定义文件，告诉 Agent 何时以及如何调用 | 必须与 `scripts/` 在同一目录 |
+| `bin/asr` / `bin/asr.cmd` | 全局命令包装器示例（git-bash / cmd），可选 | 复制到 PATH 中的任意目录，并改写其中的两个路径 |
+
+按使用方式二选一（或都装）：
+
+**方式 A：作为 Claude Code Skill（推荐）**
+
+把整个仓库克隆到 Agent 的 skill 目录：
+
+```bash
+# macOS / Linux（用户级，所有项目可用）
+git clone https://github.com/OstrichHermit/audio-transcribe.git ~/.claude/skills/audio-transcribe
+
+# Windows PowerShell
+git clone https://github.com/OstrichHermit/audio-transcribe.git "$env:USERPROFILE\.claude\skills\audio-transcribe"
+```
+
+只想在某个项目使用时，克隆到 `<项目>\.claude\skills\audio-transcribe`。重启 Claude Code 后，Agent 会在语音转文字场景自动按 `SKILL.md` 的说明调用脚本。
+
+**方式 B：作为独立 CLI**
+
+克隆或下载到任意位置，直接用 Python 调用：
+
+```bash
+git clone https://github.com/OstrichHermit/audio-transcribe.git
+python audio-transcribe/scripts/transcribe.py "录音.mp3"
+```
+
+**可选：全局 `asr` 命令**
+
+两种方式都适用。把 `bin/asr`（git-bash 用）或 `bin/asr.cmd`（cmd 用）复制到 PATH 中的目录（如 `/usr/local/bin` 或自建的 bin 目录），编辑文件里的两处路径：第 1 处改成你的 Python 解释器路径，第 2 处改成 `scripts/transcribe.py` 的实际位置。之后即可在任意终端直接：
+
+```bash
+asr "<文件路径>"
+```
 
 ## 使用方法
 
@@ -53,19 +107,13 @@ $ python scripts/transcribe.py meeting.mp4
 
 微信语音消息文件（`*.silk`，含 `0x02 + #!SILK_V3` 头）直接作为输入传入即可，脚本自动完成剥头、pilk 解码（24kHz PCM）→ ffmpeg 封装 WAV → 正常识别管线。
 
-## 作为 Claude Code Skill 使用
-
-仓库根目录的 `SKILL.md` 是 [Claude Code Agent Skill](https://code.claude.com/docs/en/skills) 定义文件，把整个仓库放到 `~/.claude/skills/audio-transcribe/`（或项目的 `.claude/skills/`）即可让 Claude 主动在语音转文字场景调用。
-
-`bin/` 目录提供了全局命令包装器示例（`asr` / `asr.cmd`），把其中的路径改成你自己的 Python 和 skill 路径，并加入 PATH，即可在任意终端用 `asr "<文件>"` 调用。
-
-## 可选环境变量
+## 环境变量
 
 | 变量 | 说明 |
 |------|------|
 | `DASHSCOPE_API_KEY` | 百炼 API Key（必需） |
 | `DASHSCOPE_BASE_URL` | API 域名覆盖。默认指向作者的百炼**业务空间**专属域名，使用普通百炼 key 的用户请设置为 `https://dashscope.aliyuncs.com/api/v1` |
-| `ASR_WORKSPACE` | 中间文件的临时根目录，默认 `D:\AgentWorkspace`（Windows 本机路径，建议按需覆盖） |
+| `ASR_WORKSPACE` | 中间文件的临时根目录，默认 `D:\AgentWorkspace`（作者的本机路径，建议按需覆盖） |
 
 ## 计费说明
 
