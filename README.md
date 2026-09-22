@@ -1,8 +1,8 @@
 # audio-transcribe
 
-音视频转文字 CLI + Claude Code Skill。基于阿里云百炼录音文件识别接口（qwen-audio-asr 系列 / paraformer），支持说话人分离，长音频免切片，原生支持微信语音 SILK 格式。
+音视频转文字，支持 CLI、Claude Code Skill、MCP Server 三种形态。基于阿里云百炼录音文件识别接口（qwen-audio-asr 系列 / paraformer），支持说话人分离，长音频免切片，原生支持微信语音 SILK 格式。
 
-也可作为独立命令行工具使用，不一定需要 Claude Code。
+不一定需要 Claude Code：可作为独立命令行工具，也可接入任意 MCP 客户端（Claude Desktop、Cursor 等）。
 
 ## 功能特性
 
@@ -11,6 +11,7 @@
 - **说话人分离**：多人对话按 `说话人N：内容` 分段输出；单一说话人自动退化为整段纯文本
 - **长音频免切片**：走百炼录音文件识别（filetrans）异步接口，一次上传整段处理，DashScope 临时存储转完自动删除
 - **清晰的输出约定**：stdout 只输出转写文本，进度 / 耗时 / 计费估算走 stderr，方便脚本和 Agent 调用
+- **内置 MCP Server**：`scripts/mcp_server.py` 手写 MCP stdio 协议（JSON-RPC 2.0），仅标准库零第三方依赖，任意 MCP 客户端即插即用
 
 ## 安装
 
@@ -44,6 +45,7 @@ echo 'export DASHSCOPE_API_KEY="sk-xxxx"' >> ~/.bashrc
 | 文件 | 用途 | 放到哪里 |
 |------|------|----------|
 | `scripts/transcribe.py` | 主脚本，所有逻辑都在这里 | 不需要单独移动，跟随安装方式即可 |
+| `scripts/mcp_server.py` | MCP stdio server，复用 `transcribe.py` 的转写流程 | 不需要单独移动，跟随安装方式即可 |
 | `SKILL.md` | Claude Code Skill 定义文件，告诉 Agent 何时以及如何调用 | 必须与 `scripts/` 在同一目录 |
 | `bin/asr` / `bin/asr.cmd` | 全局命令包装器示例（git-bash / cmd），可选 | 复制到 PATH 中的任意目录，并改写其中的两个路径 |
 
@@ -71,6 +73,33 @@ git clone https://github.com/OstrichHermit/audio-transcribe.git "$env:USERPROFIL
 git clone https://github.com/OstrichHermit/audio-transcribe.git
 python audio-transcribe/scripts/transcribe.py "录音.mp3"
 ```
+
+**方式 C：作为 MCP Server**
+
+任意支持 MCP 的客户端（Claude Code、Claude Desktop、Cursor 等）都能接入：
+
+```bash
+# Claude Code
+claude mcp add audio-transcribe-mcp -- python /path/to/audio-transcribe/scripts/mcp_server.py
+```
+
+其他客户端在 MCP 配置 JSON 中添加（`env` 里按需配置 API Key，也可继承系统环境变量）：
+
+```json
+{
+  "mcpServers": {
+    "audio-transcribe-mcp": {
+      "command": "python",
+      "args": ["/path/to/audio-transcribe/scripts/mcp_server.py"],
+      "env": {
+        "DASHSCOPE_API_KEY": "sk-xxxx"
+      }
+    }
+  }
+}
+```
+
+接入后客户端会得到一个 `transcribe` 工具：`file_path` 必填，`speakers`（说话人分离，默认开）和 `out_path`（结果另存）可选。
 
 **可选：全局 `asr` 命令**
 

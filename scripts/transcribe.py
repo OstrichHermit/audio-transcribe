@@ -180,6 +180,52 @@ def format_text(data: dict, with_speakers: bool) -> str:
     return "\n".join(lines)
 
 
+def transcribe_file(src: Path, with_speakers: bool = True, out: str = None,
+                    keep_workdir: bool = False) -> str:
+    """核心流程：预处理 → 上传 → 识别 → 格式化，返回转写文本（CLI 与 MCP 共用）"""
+    tmp_root = WORKSPACE / "temp"
+    tmp_root.mkdir(parents=True, exist_ok=True)
+    workdir = Path(tempfile.mkdtemp(prefix="asr_", dir=tmp_root))
+    file_id = None
+    t0 = time.time()
+
+    try:
+        eprint(f"[1/4] ffmpeg 预处理: {src.name}")
+        if src.suffix.lower() == ".silk":
+            src = decode_silk(src, workdir)
+        audio = prepare_audio(src, workdir)
+        dur_out = run(["ffprobe", "-v", "error", "-show_entries", "format=duration",
+                       "-of", "default=nw=1:nk=1", audio])
+        dur = float(dur_out)
+        eprint(f"[2/4] 上传音频（{dur / 60:.1f} 分钟）...")
+        file_id, dl_url = upload_to_dashscope(audio)
+
+        eprint("[3/4] 提交识别任务...")
+        _, task_id = submit_task(dl_url)
+        result = wait_result(task_id, dur)
+
+        text = format_text(result, with_speakers=with_speakers)
+        eprint(f"[4/4] 完成，耗时 {time.time() - t0:.0f}s，音频 {dur / 60:.1f} 分钟"
+               f"（计费约 {dur / 3600 * 0.11:.2f} 元，按 3.1 Token 计费估算）")
+
+        if out:
+            out_path = Path(out).expanduser().resolve()
+            out_path.parent.mkdir(parents=True, exist_ok=True)
+            out_path.write_text(text + "\n", encoding="utf-8")
+            eprint(f"已保存: {out_path}")
+        return text
+    finally:
+        if file_id:
+            try:
+                dashscope.Files.delete(file_id=file_id, api_key=dashscope.api_key)
+            except Exception:
+                pass
+        if keep_workdir:
+            eprint(f"中间文件保留: {workdir}")
+        else:
+            shutil.rmtree(workdir, ignore_errors=True)
+
+
 def main():
     ap = argparse.ArgumentParser(description="音视频转文字（阿里云百炼，支持说话人分离）")
     ap.add_argument("input", help="音频或视频文件路径")
@@ -203,47 +249,8 @@ def main():
         eprint("未设置 DASHSCOPE_API_KEY 环境变量")
         sys.exit(1)
 
-    tmp_root = WORKSPACE / "temp"
-    tmp_root.mkdir(parents=True, exist_ok=True)
-    workdir = Path(tempfile.mkdtemp(prefix="asr_", dir=tmp_root))
-    file_id = None
-    t0 = time.time()
-
-    try:
-        eprint(f"[1/4] ffmpeg 预处理: {src.name}")
-        if src.suffix.lower() == ".silk":
-            src = decode_silk(src, workdir)
-        audio = prepare_audio(src, workdir)
-        dur_out = run(["ffprobe", "-v", "error", "-show_entries", "format=duration",
-                       "-of", "default=nw=1:nk=1", audio])
-        dur = float(dur_out)
-        eprint(f"[2/4] 上传音频（{dur / 60:.1f} 分钟）...")
-        file_id, dl_url = upload_to_dashscope(audio)
-
-        eprint("[3/4] 提交识别任务...")
-        _, task_id = submit_task(dl_url)
-        result = wait_result(task_id, dur)
-
-        text = format_text(result, with_speakers=not args.no_speakers)
-        eprint(f"[4/4] 完成，耗时 {time.time() - t0:.0f}s，音频 {dur / 60:.1f} 分钟"
-               f"（计费约 {dur / 3600 * 0.11:.2f} 元，按 3.1 Token 计费估算）")
-
-        if args.out:
-            out_path = Path(args.out).expanduser().resolve()
-            out_path.parent.mkdir(parents=True, exist_ok=True)
-            out_path.write_text(text + "\n", encoding="utf-8")
-            eprint(f"已保存: {out_path}")
-        print(text)
-    finally:
-        if file_id:
-            try:
-                dashscope.Files.delete(file_id=file_id, api_key=dashscope.api_key)
-            except Exception:
-                pass
-        if args.keep_workdir:
-            eprint(f"中间文件保留: {workdir}")
-        else:
-            shutil.rmtree(workdir, ignore_errors=True)
+    print(transcribe_file(src, with_speakers=not args.no_speakers,
+                          out=args.out, keep_workdir=args.keep_workdir))
 
 
 if __name__ == "__main__":
