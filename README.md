@@ -80,7 +80,7 @@ python audio-transcribe/scripts/transcribe.py "录音.mp3"
 
 ```bash
 # Claude Code
-claude mcp add audio-transcribe-mcp -- python /path/to/audio-transcribe/scripts/mcp_server.py
+claude mcp add audio-transcribe -- python /path/to/audio-transcribe/scripts/mcp_server.py
 ```
 
 其他客户端在 MCP 配置 JSON 中添加（`env` 里按需配置 API Key，也可继承系统环境变量）：
@@ -88,7 +88,7 @@ claude mcp add audio-transcribe-mcp -- python /path/to/audio-transcribe/scripts/
 ```json
 {
   "mcpServers": {
-    "audio-transcribe-mcp": {
+    "audio-transcribe": {
       "command": "python",
       "args": ["/path/to/audio-transcribe/scripts/mcp_server.py"],
       "env": {

@@ -16,7 +16,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import transcribe
 
 PROTOCOL_VERSION = "2024-11-05"
-SERVER_INFO = {"name": "audio-transcribe-mcp", "version": "1.0.0"}
+SERVER_INFO = {"name": "audio-transcribe", "version": "1.0.0"}
 
 TOOLS = [
     {
