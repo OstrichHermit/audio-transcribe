@@ -1,0 +1,2 @@
+@echo off
+"C:\Users\ASUS\AppData\Local\Programs\Python\Python314\python.exe" "D:\AgentWorkspace\.claude\skills\audio-transcribe\scripts\transcribe.py" %*
