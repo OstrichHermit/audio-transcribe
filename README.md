@@ -29,6 +29,14 @@ pip install .
 
 安装后会得到两个命令：`asr`（CLI）和 `audio-transcribe-mcp`（MCP Server）。
 
+### 安装为 Agent Skill（可选）
+
+仓库内附带 Agent Skill（`skills/audio-transcribe/SKILL.md`），把它复制到你所用 AI Agent 的 skills 目录，Agent 即可自动掌握本工具的用法。以 Claude Code 为例：
+
+```bash
+cp -r skills/audio-transcribe ~/.claude/skills/audio-transcribe
+```
+
 ### 1. 安装依赖
 
 - Python 3.10+（`pip install .` 会自动安装 dashscope 依赖）

@@ -29,6 +29,14 @@ pip install .
 
 You get two commands: `asr` (CLI) and `audio-transcribe-mcp` (MCP Server).
 
+### Install as an Agent Skill (optional)
+
+This repo ships with an Agent Skill (`skills/audio-transcribe/SKILL.md`). Copy it into your AI agent's skills directory so the agent picks up the tool automatically. Claude Code example:
+
+```bash
+cp -r skills/audio-transcribe ~/.claude/skills/audio-transcribe
+```
+
 ### 1. Dependencies
 
 - Python 3.10+ (`pip install .` pulls in dashscope automatically)
