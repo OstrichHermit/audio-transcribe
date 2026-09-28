@@ -1,8 +1,12 @@
 # audio-transcribe
 
-音视频转文字，支持 CLI、MCP Server 两种形态。基于阿里云百炼录音文件识别接口（qwen-audio-asr 系列 / paraformer），支持说话人分离，长音频免切片，原生支持微信语音 SILK 格式。
+**音视频转文字，支持 CLI、MCP Server 两种形态：说话人分离，长音频免切片，原生支持微信语音 SILK 格式。**
 
-不依赖 Claude Code：可作为独立命令行工具，也可接入任意 MCP 客户端（Claude Desktop、Cursor 等）。
+Audio/video transcription in both CLI and MCP Server flavors: speaker diarization, long-audio support with no manual splitting, and native WeChat SILK decoding.
+
+[English](README_EN.md) | 简体中文
+
+基于阿里云百炼录音文件识别接口（qwen-audio-asr 系列 / paraformer）。不依赖 Claude Code：可作为独立命令行工具，也可接入任意 MCP 客户端（Claude Desktop、Cursor 等）。
 
 ## 功能特性
 
