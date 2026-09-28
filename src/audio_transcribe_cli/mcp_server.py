@@ -2,18 +2,17 @@
 """MCP stdio server：音视频转文字工具
 
 手写 MCP 协议（newline-delimited JSON-RPC 2.0），仅用标准库，无第三方 MCP 依赖。
-复用同目录 transcribe.py 的转写流程。进度与日志全部输出到 stderr，
+复用包内 cli 模块的转写流程。进度与日志全部输出到 stderr，
 stdout 仅输出协议消息。
 
-依赖：dashscope SDK、ffmpeg、DASHSCOPE_API_KEY 环境变量（同 transcribe.py）。
+依赖：dashscope SDK、ffmpeg、DASHSCOPE_API_KEY 环境变量（同 cli 模块）。
 """
 import json
 import os
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parent))
-import transcribe
+from . import cli as transcribe
 
 PROTOCOL_VERSION = "2024-11-05"
 SERVER_INFO = {"name": "audio-transcribe", "version": "1.0.0"}

@@ -21,15 +21,15 @@ from pathlib import Path
 import dashscope
 from dashscope.audio.asr import Transcription
 
-# 业务空间专属域名（sk-ws- 前缀的业务空间 key 必需）。普通百炼 key 请设置环境变量
-# DASHSCOPE_BASE_URL=https://dashscope.aliyuncs.com/api/v1 覆盖
+# DashScope API 域名：默认官方主域名，开箱即用；使用业务空间专属域名（sk-ws- 前缀的
+# 业务空间 key）的用户请设置环境变量 DASHSCOPE_BASE_URL 覆盖
 dashscope.base_http_url = os.environ.get(
     "DASHSCOPE_BASE_URL",
-    "https://ws-85b4uphg4hjd3a97.cn-beijing.maas.aliyuncs.com/api/v1",
+    "https://dashscope.aliyuncs.com/api/v1",
 )
 
-# 中间文件存放的临时根目录，可通过 ASR_WORKSPACE 环境变量覆盖
-WORKSPACE = Path(os.environ.get("ASR_WORKSPACE", r"D:\AgentWorkspace"))
+# 中间文件存放的临时根目录，默认系统临时目录，可通过 ASR_WORKSPACE 环境变量覆盖
+WORKSPACE = Path(os.environ.get("ASR_WORKSPACE", tempfile.gettempdir()))
 MODEL = "qwen-audio-3.1-asr-flash-filetrans"
 FALLBACK_MODELS = ["paraformer-v2"]
 SUPPORTED_EXTS = {
