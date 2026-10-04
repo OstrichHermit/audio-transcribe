@@ -1,4 +1,4 @@
-# audio-transcribe
+# audio-transcribe-cli-mcp
 
 **音视频转文字，支持 CLI、MCP Server 两种形态：说话人分离，长音频免切片，原生支持微信语音 SILK 格式。**
 
@@ -26,8 +26,8 @@ pip install audio-transcribe-cli-mcp
 也可从源码安装：
 
 ```bash
-git clone https://github.com/OstrichHermit/audio-transcribe.git
-cd audio-transcribe
+git clone https://github.com/OstrichHermit/audio-transcribe-cli-mcp.git
+cd audio-transcribe-cli-mcp
 pip install .
 ```
 
@@ -35,10 +35,10 @@ pip install .
 
 ### 安装为 Agent Skill（可选）
 
-仓库内附带 Agent Skill（`skills/audio-transcribe/SKILL.md`），把它复制到你所用 AI Agent 的 skills 目录，Agent 即可自动掌握本工具的用法。以 Claude Code 为例：
+仓库内附带 Agent Skill（`skills/audio-transcribe-cli-mcp/SKILL.md`），把它复制到你所用 AI Agent 的 skills 目录，Agent 即可自动掌握本工具的用法。以 Claude Code 为例：
 
 ```bash
-cp -r skills/audio-transcribe ~/.claude/skills/audio-transcribe
+cp -r skills/audio-transcribe-cli-mcp ~/.claude/skills/audio-transcribe-cli-mcp
 ```
 
 ### 1. 安装依赖

@@ -1,5 +1,5 @@
 ---
-name: audio-transcribe
+name: audio-transcribe-cli-mcp
 description: 音视频转文字（支持说话人分离）。当用户要求把音频、录音、语音消息、视频等转成文字/文本，或提到"转文字"、"转录"、"transcribe"、"语音识别"、"会议录音整理"、"聊天录音"、"谁说的"等时使用。支持 mp3/wav/m4a/flac/ogg/aac/mp4/mkv/mov 等所有 ffmpeg 支持的格式及微信语音 silk，任意时长（无需切片），通过阿里云百炼录音文件识别接口，自动区分多个说话人，约 0.11 元/小时。
 ---
 
@@ -24,7 +24,7 @@ asr "<文件路径>" --no-speakers        # 关闭说话人分离，输出整段
 - `--keep-workdir`：保留中间文件（调试用）
 
 找不到 `asr` 命令时，回退用完整路径：
-`& "C:\Users\ASUS\AppData\Local\Programs\Python\Python314\python.exe" "D:\AgentWorkspace\.claude\skills\audio-transcribe\scripts\transcribe.py" "<文件>"`
+`& "C:\Users\ASUS\AppData\Local\Programs\Python\Python314\python.exe" "D:\AgentWorkspace\.claude\skills\audio-transcribe-cli-mcp\scripts\transcribe.py" "<文件>"`
 
 ## 输出约定
 

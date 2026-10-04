@@ -1,4 +1,4 @@
-# audio-transcribe
+# audio-transcribe-cli-mcp
 
 **Audio/video transcription in both CLI and MCP Server flavors: speaker diarization, long-audio support with no manual splitting, and native WeChat SILK decoding.**
 
@@ -26,8 +26,8 @@ pip install audio-transcribe-cli-mcp
 Or install from source:
 
 ```bash
-git clone https://github.com/OstrichHermit/audio-transcribe.git
-cd audio-transcribe
+git clone https://github.com/OstrichHermit/audio-transcribe-cli-mcp.git
+cd audio-transcribe-cli-mcp
 pip install .
 ```
 
@@ -35,10 +35,10 @@ You get two commands: `asr` (CLI) and `audio-transcribe-mcp` (MCP Server).
 
 ### Install as an Agent Skill (optional)
 
-This repo ships with an Agent Skill (`skills/audio-transcribe/SKILL.md`). Copy it into your AI agent's skills directory so the agent picks up the tool automatically. Claude Code example:
+This repo ships with an Agent Skill (`skills/audio-transcribe-cli-mcp/SKILL.md`). Copy it into your AI agent's skills directory so the agent picks up the tool automatically. Claude Code example:
 
 ```bash
-cp -r skills/audio-transcribe ~/.claude/skills/audio-transcribe
+cp -r skills/audio-transcribe-cli-mcp ~/.claude/skills/audio-transcribe-cli-mcp
 ```
 
 ### 1. Dependencies

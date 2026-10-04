@@ -30,8 +30,8 @@ dependencies = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/OstrichHermit/audio-transcribe"
-Issues = "https://github.com/OstrichHermit/audio-transcribe/issues"
+Homepage = "https://github.com/OstrichHermit/audio-transcribe-cli-mcp"
+Issues = "https://github.com/OstrichHermit/audio-transcribe-cli-mcp/issues"
 
 [project.scripts]
 asr = "audio_transcribe_cli.cli:main"
