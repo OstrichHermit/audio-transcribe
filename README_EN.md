@@ -20,12 +20,16 @@ Powered by the Alibaba Cloud Bailian file-transcription API (qwen-audio-asr seri
 ## Install
 
 ```bash
+pip install audio-transcribe-cli-mcp
+```
+
+Or install from source:
+
+```bash
 git clone https://github.com/OstrichHermit/audio-transcribe.git
 cd audio-transcribe
 pip install .
 ```
-
-> PyPI release coming soon — install from source for now.
 
 You get two commands: `asr` (CLI) and `audio-transcribe-mcp` (MCP Server).
 

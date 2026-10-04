@@ -20,12 +20,16 @@ Audio/video transcription in both CLI and MCP Server flavors: speaker diarizatio
 ## 安装
 
 ```bash
+pip install audio-transcribe-cli-mcp
+```
+
+也可从源码安装：
+
+```bash
 git clone https://github.com/OstrichHermit/audio-transcribe.git
 cd audio-transcribe
 pip install .
 ```
-
-> PyPI 发布 Coming soon，当前请从源码安装。
 
 安装后会得到两个命令：`asr`（CLI）和 `audio-transcribe-mcp`（MCP Server）。
 
