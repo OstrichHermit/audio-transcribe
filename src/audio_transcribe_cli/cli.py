@@ -38,10 +38,6 @@ SUPPORTED_EXTS = {
     ".silk",
 }
 
-# uv 用于 SILK 解码（pilk 仅提供 cp311 及以下 wheel，本机 Python314 装不上）
-_UV_FALLBACK = Path(r"C:\Users\ASUS\AppData\Local\Programs\Python\Python314\Scripts\uv.exe")
-
-
 def eprint(*a):
     print(*a, file=sys.stderr, flush=True)
 
@@ -75,9 +71,9 @@ def decode_silk(src: Path, workdir: Path) -> Path:
     clean_silk = workdir / "clean.silk"
     clean_silk.write_bytes(data)
 
-    uv_exe = shutil.which("uv") or (_UV_FALLBACK if _UV_FALLBACK.exists() else None)
+    uv_exe = os.environ.get("UV_PATH") or shutil.which("uv")
     if uv_exe is None:
-        raise RuntimeError("未找到 uv 可执行文件，无法解码 SILK")
+        raise RuntimeError("未找到 uv 可执行文件，无法解码 SILK（可设置 UV_PATH 环境变量指定路径）")
     eprint("  SILK 格式：pilk 解码中（uv 临时环境，首次运行较慢）...")
     pcm = workdir / "audio.pcm"
     code = f"import pilk\npilk.decode(r'{clean_silk}', r'{pcm}')\n"
