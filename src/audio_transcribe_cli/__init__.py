@@ -2,4 +2,4 @@
 
 CLI 入口：``asr``；MCP Server 入口：``audio-transcribe-mcp``。
 """
-__version__ = "0.1.0"
+__version__ = "0.1.1"
