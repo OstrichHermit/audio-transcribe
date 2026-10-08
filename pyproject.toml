@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "audio-transcribe-cli-mcp"
-version = "0.1.1"
+version = "0.1.2"
 description = "音视频转文字 CLI / MCP Server：阿里云百炼录音文件识别，支持说话人分离与微信语音 SILK"
 readme = "README.md"
 license = { text = "MIT" }
