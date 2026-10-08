@@ -15,7 +15,7 @@ from pathlib import Path
 from . import cli as transcribe
 
 PROTOCOL_VERSION = "2024-11-05"
-SERVER_INFO = {"name": "audio-transcribe", "version": "1.0.0"}
+SERVER_INFO = {"name": "audio-transcribe", "version": "1.1.0"}
 
 TOOLS = [
     {
@@ -24,6 +24,7 @@ TOOLS = [
             "音视频转文字，支持说话人分离。支持 mp3/wav/m4a/flac/ogg/aac/amr/wma、"
             "mp4/mkv/mov/avi/webm/flv/ts 等常见音视频格式及微信语音 silk。"
             "返回转写文本，多说话人音频按说话人分段（说话人0/1/2...）。"
+            "开启 timestamps 后逐句返回 SRT 风格起止时间戳，适合会议纪要定位原音频。"
         ),
         "inputSchema": {
             "type": "object",
@@ -33,6 +34,14 @@ TOOLS = [
                     "type": "boolean",
                     "description": "是否启用说话人分离（默认 true，单说话人时输出纯文本）",
                     "default": True,
+                },
+                "timestamps": {
+                    "type": "boolean",
+                    "description": (
+                        "是否逐句输出起止时间戳（默认 false）。"
+                        "开启后每句格式：[HH:MM:SS,mmm -> HH:MM:SS,mmm] 内容"
+                    ),
+                    "default": False,
                 },
                 "out_path": {"type": "string", "description": "可选，结果另存为此路径"},
             },
@@ -73,6 +82,7 @@ def run_tool(args) -> str:
         src,
         with_speakers=bool(args.get("speakers", True)),
         out=args.get("out_path"),
+        with_timestamps=bool(args.get("timestamps", False)),
     )
 
 

@@ -13,6 +13,7 @@ Audio/video transcription in both CLI and MCP Server flavors: speaker diarizatio
 - **全格式输入**：mp3 / wav / m4a / aac / flac / ogg / opus / amr / wma 及 mp4 / mkv / mov 等所有 ffmpeg 支持的音视频格式（视频自动抽取音轨）
 - **微信语音 SILK 原生支持**：自动识别并剥离微信 `0x02 + #!SILK_V3` 文件头，通过 [uv](https://docs.astral.sh/uv/) 临时环境调用 [pilk](https://github.com/foyoux/pilk) 解码（仅转写 silk 文件时需要 uv，其余格式零额外依赖）
 - **说话人分离**：多人对话按 `说话人N：内容` 分段输出；单一说话人自动退化为整段纯文本
+- **句级时间戳**：`--timestamps` 逐句输出 SRT 风格起止时间戳，AI 生成会议纪要后可按时间戳回原音频核对
 - **长音频免切片**：走百炼录音文件识别（filetrans）异步接口，一次上传整段处理，DashScope 临时存储转完自动删除
 - **清晰的输出约定**：stdout 只输出转写文本，进度 / 耗时 / 计费估算走 stderr，方便脚本和 Agent 调用
 - **内置 MCP Server**：`audio-transcribe-mcp` 命令，手写 MCP stdio 协议（JSON-RPC 2.0），仅标准库零第三方依赖，任意 MCP 客户端即插即用
@@ -66,6 +67,7 @@ echo 'export DASHSCOPE_API_KEY="sk-xxxx"' >> ~/.bashrc
 ```bash
 asr "<音频或视频文件路径>"
 asr "<文件>" --no-speakers   # 关闭说话人分离
+asr "<文件>" --timestamps    # 逐句输出起止时间戳
 asr "<文件>" --out 结果.txt   # 保存到文件
 asr "<文件>" --keep-workdir   # 保留中间文件（调试）
 ```
@@ -82,6 +84,14 @@ $ asr meeting.mp4
 [4/4] 完成，耗时 78s，音频 32.5 分钟（计费约 0.06 元，按 3.1 Token 计费估算）
 说话人1：大家好，今天我们讨论一下项目排期……
 说话人2：好的，我先说下我这边的情况……
+```
+
+加 `--timestamps` 时逐句输出 SRT 风格时间戳：
+
+```bash
+$ asr meeting.mp4 --timestamps
+[00:00:01,200 -> 00:00:06,360] 说话人0：大家好，今天我们讨论一下项目排期……
+[00:00:07,340 -> 00:00:12,180] 说话人1：好的，我先说下我这边的情况……
 ```
 
 ### 微信语音（SILK）
@@ -114,7 +124,7 @@ claude mcp add audio-transcribe -- audio-transcribe-mcp
 
 也可以用模块方式启动：`python -m audio_transcribe_cli.mcp_server`。
 
-接入后客户端会得到一个 `transcribe` 工具：`file_path` 必填，`speakers`（说话人分离，默认开）和 `out_path`（结果另存）可选。
+接入后客户端会得到一个 `transcribe` 工具：`file_path` 必填，`speakers`（说话人分离，默认开）、`timestamps`（逐句输出起止时间戳，默认关）和 `out_path`（结果另存）可选。
 
 ## 环境变量
 

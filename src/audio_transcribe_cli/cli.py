@@ -145,9 +145,43 @@ def wait_result(task_id: str, audio_seconds: float, timeout: float = None):
     raise RuntimeError("等待识别结果超时")
 
 
-def format_text(data: dict, with_speakers: bool) -> str:
-    """按说话人分段输出；若只有单一说话人则输出整段纯文本"""
+def format_ts(ms) -> str:
+    """毫秒 → SRT 风格时间戳 HH:MM:SS,mmm"""
+    ms = int(ms or 0)
+    h, rem = divmod(ms, 3600000)
+    m, rem = divmod(rem, 60000)
+    s, milli = divmod(rem, 1000)
+    return f"{h:02d}:{m:02d}:{s:02d},{milli:03d}"
+
+
+def format_text(data: dict, with_speakers: bool, with_timestamps: bool = False) -> str:
+    """按说话人分段输出；若只有单一说话人则输出整段纯文本
+
+    with_timestamps=True 时逐句输出，每句带 SRT 风格起止时间戳：
+      多说话人：[00:00:01,200 -> 00:00:03,400] 说话人0：内容
+      单说话人：[00:00:01,200 -> 00:00:03,400] 内容
+    """
     transcripts = data.get("transcripts", [])
+
+    if with_timestamps:
+        all_sentences = []
+        for tr in transcripts:
+            all_sentences.extend(tr.get("sentences", []))
+        speakers_used = {s.get("speaker_id") for s in all_sentences
+                         if s.get("speaker_id") is not None}
+        show_spk = with_speakers and len(speakers_used) >= 2
+        lines = []
+        for s in all_sentences:
+            text = (s.get("text") or "").strip()
+            if not text:
+                continue
+            ts = f"[{format_ts(s.get('begin_time'))} -> {format_ts(s.get('end_time'))}]"
+            if show_spk:
+                lines.append(f"{ts} 说话人{s['speaker_id']}：{text}")
+            else:
+                lines.append(f"{ts} {text}")
+        return "\n".join(lines)
+
     if not with_speakers:
         return "\n".join(tr.get("text", "").strip() for tr in transcripts if tr.get("text"))
 
@@ -177,7 +211,7 @@ def format_text(data: dict, with_speakers: bool) -> str:
 
 
 def transcribe_file(src: Path, with_speakers: bool = True, out: str = None,
-                    keep_workdir: bool = False) -> str:
+                    keep_workdir: bool = False, with_timestamps: bool = False) -> str:
     """核心流程：预处理 → 上传 → 识别 → 格式化，返回转写文本（CLI 与 MCP 共用）"""
     tmp_root = WORKSPACE / "temp"
     tmp_root.mkdir(parents=True, exist_ok=True)
@@ -200,7 +234,8 @@ def transcribe_file(src: Path, with_speakers: bool = True, out: str = None,
         _, task_id = submit_task(dl_url)
         result = wait_result(task_id, dur)
 
-        text = format_text(result, with_speakers=with_speakers)
+        text = format_text(result, with_speakers=with_speakers,
+                           with_timestamps=with_timestamps)
         eprint(f"[4/4] 完成，耗时 {time.time() - t0:.0f}s，音频 {dur / 60:.1f} 分钟"
                f"（计费约 {dur / 3600 * 0.11:.2f} 元，按 3.1 Token 计费估算）")
 
@@ -226,6 +261,8 @@ def main():
     ap = argparse.ArgumentParser(description="音视频转文字（阿里云百炼，支持说话人分离）")
     ap.add_argument("input", help="音频或视频文件路径")
     ap.add_argument("--no-speakers", action="store_true", help="关闭说话人分离，输出纯文本")
+    ap.add_argument("--timestamps", action="store_true",
+                    help="逐句输出 SRT 风格起止时间戳（可配合 --no-speakers）")
     ap.add_argument("--out", default=None, help="结果保存路径（默认只打印）")
     ap.add_argument("--keep-workdir", action="store_true", help="保留中间文件（调试用）")
     args = ap.parse_args()
@@ -246,7 +283,8 @@ def main():
         sys.exit(1)
 
     print(transcribe_file(src, with_speakers=not args.no_speakers,
-                          out=args.out, keep_workdir=args.keep_workdir))
+                          out=args.out, keep_workdir=args.keep_workdir,
+                          with_timestamps=args.timestamps))
 
 
 if __name__ == "__main__":

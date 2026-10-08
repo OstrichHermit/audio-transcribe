@@ -13,6 +13,7 @@ Powered by the Alibaba Cloud Bailian file-transcription API (qwen-audio-asr seri
 - **All-format input**: every ffmpeg-supported audio/video format — mp3 / wav / m4a / aac / flac / ogg / opus / amr / wma and mp4 / mkv / mov etc. (audio track auto-extracted from video)
 - **Native WeChat SILK support**: auto-detects and strips the WeChat `0x02 + #!SILK_V3` header, decoding via [pilk](https://github.com/foyoux/pilk) in a [uv](https://docs.astral.sh/uv/) ephemeral environment (uv is only needed for SILK files; all other formats are dependency-free)
 - **Speaker diarization**: multi-speaker conversations are segmented as `说话人N：内容` (Speaker N: content); a single speaker degrades gracefully to plain text
+- **Sentence-level timestamps**: `--timestamps` prints per-sentence SRT-style start/end times, so AI-generated meeting minutes can be verified against the original audio
 - **Long audio without splitting**: uses the Bailian file-transcription (filetrans) async API — upload once, processed whole; DashScope temp storage is deleted automatically after transcription
 - **Clean output contract**: stdout carries transcription text only; progress / timing / cost estimates go to stderr — script- and agent-friendly
 - **Built-in MCP Server**: the `audio-transcribe-mcp` command, hand-written MCP stdio protocol (JSON-RPC 2.0), stdlib only with zero third-party deps — plug and play with any MCP client
@@ -66,6 +67,7 @@ It talks to the official Bailian primary domain out of the box. If you use a wor
 ```bash
 asr "<audio or video file>"
 asr "<file>" --no-speakers   # disable speaker diarization
+asr "<file>" --timestamps    # per-sentence start/end timestamps
 asr "<file>" --out result.txt # save to file
 asr "<file>" --keep-workdir   # keep intermediate files (debug)
 ```
@@ -82,6 +84,14 @@ $ asr meeting.mp4
 [4/4] 完成，耗时 78s，音频 32.5 分钟（计费约 0.06 元，按 3.1 Token 计费估算）
 说话人1：大家好，今天我们讨论一下项目排期……
 说话人2：好的，我先说下我这边的情况……
+```
+
+With `--timestamps`, each sentence carries SRT-style times:
+
+```bash
+$ asr meeting.mp4 --timestamps
+[00:00:01,200 -> 00:00:06,360] 说话人0：大家好，今天我们讨论一下项目排期……
+[00:00:07,340 -> 00:00:12,180] 说话人1：好的，我先说下我这边的情况……
 ```
 
 ### WeChat voice messages (SILK)
@@ -114,7 +124,7 @@ Other clients: add to your MCP config JSON (set the API key in `env` as needed, 
 
 Module launch also works: `python -m audio_transcribe_cli.mcp_server`.
 
-Once attached, the client gets one `transcribe` tool: `file_path` required; `speakers` (diarization, on by default) and `out_path` (save result to a file) optional.
+Once attached, the client gets one `transcribe` tool: `file_path` required; `speakers` (diarization, on by default), `timestamps` (per-sentence start/end times, off by default) and `out_path` (save result to a file) optional.
 
 ## Environment variables
 
